@@ -1,0 +1,98 @@
+[project]
+name = "openbrowser-ai"
+dynamic = ["version"]
+description = "Agentic browser automation using LangGraph and raw CDP"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    # Core browser automation
+    "pydantic>=2.0.0",
+    "pydantic-settings>=2.0.0",
+    "python-dotenv",
+    "httpx>=0.28.1",
+    "websockets>=15.0.1",
+    "aiofiles",
+    "cdp-use",
+    "bubus>=1.5.6",
+    "psutil>=7.2.0",
+    "click>=8.1.8",
+    "pillow>=11.0.0",
+    "InquirerPy>=0.3.4",
+    # MCP protocol
+    "mcp>=1.0.0",
+    # Telemetry
+    "posthog>=3.7.0",
+]
+
+[project.optional-dependencies]
+agent = [
+    "langgraph",
+    "langchain-core>=0.3.0",
+    "langchain-openai>=0.2.0",
+    "google-genai>=0.2.0",
+    "litellm==1.80.0",
+    "openai>=1.99.5,<2.0.0",
+    "pyotp",
+    "rich>=13.0.0",
+    "markdownify>=0.11.6",
+    "numpy>=2.4.0",
+    "pandas>=2.2.0",
+    "boto3>=1.36.0",
+    "reportlab",
+]
+video = ["imageio[ffmpeg]", "numpy"]
+anthropic = ["anthropic>=0.68.0"]
+groq = ["groq>=0.30.0"]
+ollama = ["ollama>=0.5.1"]
+aws = ["boto3"]
+azure = ["openai"]
+mcp = ["mcp>=1.0.0", "posthog>=3.7.0"]
+telemetry = ["posthog>=3.7.0"]
+pdf = ["pypdf", "reportlab"]
+dev = [
+    "pytest>=9.0.2",
+    "pytest-asyncio>=1.0.0",
+    "pytest-cov>=6.0.0",
+    "pytest-timeout>=2.4.0",
+    "mcp>=1.0.0",
+]
+all = [
+    "openbrowser-ai[agent,video,anthropic,groq,ollama,aws,azure,pdf]",
+]
+
+[project.scripts]
+openbrowser-ai = "openbrowser.cli:main"
+
+[build-system]
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+source = "vcs"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/openbrowser"]
+
+# Force include non-Python files (markdown system prompts) in the wheel
+# These are required for the agent to load system prompts at runtime
+[tool.hatch.build.targets.wheel.force-include]
+"src/openbrowser/agent/system_prompt.md" = "openbrowser/agent/system_prompt.md"
+"src/openbrowser/agent/system_prompt_flash.md" = "openbrowser/agent/system_prompt_flash.md"
+"src/openbrowser/agent/system_prompt_no_thinking.md" = "openbrowser/agent/system_prompt_no_thinking.md"
+"src/openbrowser/code_use/system_prompt.md" = "openbrowser/code_use/system_prompt.md"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+asyncio_default_test_loop_scope = "function"
+markers = [
+    "asyncio: mark tests as async tests",
+    "integration: integration tests requiring a real browser",
+]
+
+[dependency-groups]
+dev = [
+    "pytest-timeout>=2.4.0",
+]

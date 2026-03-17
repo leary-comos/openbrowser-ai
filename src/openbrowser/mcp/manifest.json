@@ -1,0 +1,165 @@
+{
+  "$schema": "https://github.com/anthropics/dxt/blob/main/dist/dxt-manifest.schema.json",
+  "dxt_version": "0.1",
+  "name": "openbrowser",
+  "display_name": "OpenBrowser AI Browser Automation",
+  "version": "0.1.29",
+  "description": "CodeAgent MCP server -- execute Python code with browser automation functions in a persistent namespace",
+  "long_description": "OpenBrowser CodeAgent exposes a single execute_code tool that runs Python code in a persistent namespace with browser automation functions. Write multi-step workflows in Python with full access to navigate, click, type, evaluate JS, and more.\n\n### Key Features:\n- **Code Execution**: Write Python code with async browser functions (await navigate, click, evaluate, etc.)\n- **Persistent Namespace**: Variables and state persist between execute_code calls\n- **Browser Automation**: Full browser control via CodeAgent functions\n- **JavaScript Evaluation**: Run JS in page context via evaluate()\n- **Data Libraries**: numpy, pandas, matplotlib, BeautifulSoup available\n- **Standard Libraries**: json, csv, re, datetime, requests, asyncio, Path\n\n### Use Cases:\n- Web scraping with Python data processing\n- Automated testing with assertions\n- Research and information gathering\n- Form filling and multi-step workflows\n- DOM extraction via evaluate() + Python post-processing",
+  "icon": "icon.png",
+  "homepage": "https://github.com/billy-enrizky/openbrowser-ai",
+  "documentation": "https://github.com/billy-enrizky/openbrowser-ai",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/billy-enrizky/openbrowser-ai"
+  },
+  "support": "https://github.com/billy-enrizky/openbrowser-ai/issues",
+  "author": {
+    "name": "OpenBrowser Team",
+    "email": "support@openbrowser.dev",
+    "url": "https://github.com/billy-enrizky/openbrowser-ai"
+  },
+  "server": {
+    "type": "python",
+    "entry_point": "python",
+    "mcp_config": {
+      "command": "uvx",
+      "args": ["openbrowser-ai", "--mcp"],
+      "env": {
+        "OPENBROWSER_HEADLESS": "${user_config.headless}",
+        "OPENBROWSER_ALLOWED_DOMAINS": "${user_config.allowed_domains}"
+      }
+    }
+  },
+  "tools": [
+    {
+      "name": "execute_code",
+      "description": "Execute Python code in a persistent namespace with browser automation functions (navigate, click, evaluate, etc.). All functions are async -- use await."
+    }
+  ],
+  "prompts": [
+    {
+      "name": "scrape_data",
+      "description": "Extract structured data from a website",
+      "text": "Use execute_code to write Python that navigates to {url}, extracts data using evaluate() for JS DOM queries or Python string processing, and prints structured results."
+    },
+    {
+      "name": "fill_form",
+      "description": "Fill out and submit a web form",
+      "text": "Use execute_code to navigate to {url}, get browser state to find form fields, then use input_text() and click() to fill and submit the form with: {field_data}."
+    },
+    {
+      "name": "research_topic",
+      "description": "Research a topic across multiple websites",
+      "text": "Use execute_code to navigate to multiple sites, extract content using evaluate() or page text, and aggregate findings about {topic} using Python data structures."
+    }
+  ],
+  "keywords": ["browser", "automation", "web-scraping", "testing", "ai-agent", "playwright", "selenium-alternative", "rpa", "web-automation", "mcp", "openbrowser"],
+  "license": "MIT",
+  "user_config": {
+    "workspace_directory": {
+      "type": "directory",
+      "title": "Workspace Directory",
+      "description": "Directory to use as workspace for downloads and file operations",
+      "default": "${HOME}/.config/openbrowser/workspace",
+      "required": false
+    },
+    "headless": {
+      "type": "boolean",
+      "title": "Headless Mode",
+      "description": "Run browser without GUI (faster but no visual feedback). Set to false to see the browser in action",
+      "default": false,
+      "required": false
+    },
+    "stealth": {
+      "type": "boolean",
+      "title": "Stealth Mode",
+      "description": "Use stealth mode to avoid detection by anti-bot systems",
+      "default": false,
+      "required": false
+    },
+    "user_data_dir": {
+      "type": "directory",
+      "title": "User Data Directory",
+      "description": "Chrome profile directory for persistent sessions (cookies, localStorage, etc)",
+      "default": "${HOME}/.config/openbrowser/profiles/default",
+      "required": false
+    },
+    "disable_security": {
+      "type": "boolean",
+      "title": "Disable Security",
+      "description": "Disable browser security features (CORS, CSP, etc). Use with caution",
+      "default": false,
+      "required": false
+    },
+    "deterministic_rendering": {
+      "type": "boolean",
+      "title": "Deterministic Rendering",
+      "description": "Force deterministic rendering for consistent screenshots. May break some sites",
+      "default": false,
+      "required": false
+    },
+    "viewport_expansion": {
+      "type": "number",
+      "title": "Viewport Expansion",
+      "description": "Extra pixels to expand viewport for better LLM context understanding",
+      "default": 500,
+      "minimum": 0,
+      "maximum": 2000,
+      "required": false
+    },
+    "allowed_domains": {
+      "type": "string",
+      "title": "Allowed Domains",
+      "description": "Comma-separated list of domains the browser can access (e.g., 'example.com,*.google.com'). Leave empty for no restrictions",
+      "default": "",
+      "required": false
+    },
+    "sensitive_data_masking": {
+      "type": "boolean",
+      "title": "Sensitive Data Masking",
+      "description": "Mask sensitive data (passwords, credit cards) in screenshots and logs",
+      "default": true,
+      "required": false
+    },
+    "browser_type": {
+      "type": "string",
+      "title": "Browser Type",
+      "description": "Which browser engine to use",
+      "enum": ["chromium", "firefox", "webkit"],
+      "default": "chromium",
+      "required": false
+    },
+    "default_timeout": {
+      "type": "number",
+      "title": "Default Timeout (ms)",
+      "description": "Default timeout for browser operations in milliseconds",
+      "default": 30000,
+      "minimum": 1000,
+      "maximum": 300000,
+      "required": false
+    },
+    "wait_between_actions": {
+      "type": "number",
+      "title": "Wait Between Actions (seconds)",
+      "description": "Time to wait between browser actions for stability",
+      "default": 0.5,
+      "minimum": 0,
+      "maximum": 10,
+      "required": false
+    },
+    "session_timeout": {
+      "type": "number",
+      "title": "Session Timeout (minutes)",
+      "description": "Minutes of inactivity before browser session auto-closes",
+      "default": 10,
+      "minimum": 1,
+      "maximum": 60,
+      "required": false
+    }
+  },
+  "compatibility": {
+    "claude_desktop": ">=0.10.0",
+    "platforms": ["darwin", "win32", "linux"]
+  }
+}

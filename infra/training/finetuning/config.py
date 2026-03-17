@@ -1,0 +1,117 @@
+"""Finetuning hyperparameters: SFT (QLoRA) and GRPO on Qwen3-8B."""
+
+import os
+
+# Base model for merging LoRA adapters and serving
+BASE_MODEL_NAME = "Qwen/Qwen3-8B"
+
+# SFT Config -- QLoRA on Qwen3-8B
+SFT_CONFIG = {
+    "model_name": "unsloth/Qwen3-8B-bnb-4bit",
+    "base_model_name": BASE_MODEL_NAME,
+    # QLoRA quantization
+    "load_in_4bit": True,
+    "bnb_4bit_quant_type": "nf4",
+    "bnb_4bit_use_double_quant": True,
+    "bnb_4bit_compute_dtype": "bfloat16",
+    # LoRA
+    "lora_r": 16,
+    "lora_alpha": 32,
+    "lora_dropout": 0.05,
+    "lora_target_modules": "all-linear",
+    # Training
+    "learning_rate": float(os.environ.get("LEARNING_RATE", "2e-4")),
+    "num_epochs": int(os.environ.get("NUM_EPOCHS", "2")),
+    "max_steps": int(os.environ.get("MAX_STEPS", "-1")),  # -1 = use num_epochs
+    "batch_size": 2,
+    "gradient_accumulation_steps": 8,
+    "max_seq_length": 512,
+    "warmup_ratio": 0.05,
+    "weight_decay": 0.01,
+    "fp16": False,
+    "bf16": True,
+    "logging_steps": 10,
+    "save_steps": 100,
+    "eval_steps": 50,
+}
+
+# GRPO Config
+GRPO_CONFIG = {
+    "model_name": "unsloth/Qwen3-8B-bnb-4bit",
+    "base_model_name": BASE_MODEL_NAME,
+    "sft_checkpoint": os.environ.get("SFT_CHECKPOINT_PATH", ""),
+    # QLoRA quantization (same as SFT)
+    "load_in_4bit": True,
+    "bnb_4bit_quant_type": "nf4",
+    "bnb_4bit_use_double_quant": True,
+    "bnb_4bit_compute_dtype": "bfloat16",
+    # GRPO-specific
+    "group_size": 4,
+    "learning_rate": 5e-5,
+    "num_epochs": int(os.environ.get("NUM_EPOCHS", "1")),
+    "batch_size": 2,
+    "gradient_accumulation_steps": 8,
+    "max_seq_length": 512,
+    "max_new_tokens": 512,
+    "kl_coeff": 0.1,
+    "kl_target": 0.01,
+    "clip_range": 0.2,
+    "reward_weights": {
+        "task_completion": 0.6,
+        "step_efficiency": 0.2,
+        "action_correctness": 0.2,
+    },
+    # LoRA (applied on top of SFT adapter)
+    "lora_r": 16,
+    "lora_alpha": 32,
+    "lora_dropout": 0.05,
+    "lora_target_modules": "all-linear",
+    "bf16": True,
+    "logging_steps": 5,
+    "save_steps": 50,
+}
+
+# Online GRPO Config -- browser execution on FormFactory
+ONLINE_GRPO_CONFIG = {
+    **GRPO_CONFIG,
+    "group_size": 4,  # G=4 for robust GRPO advantages (v10 used G=2, saw reward variance)
+    "kl_coeff": 0.1,  # Lowered from 0.25 -- strong SFT checkpoint means pg_loss=0 most steps, so KL-only updates degrade model
+    "formfactory_port": int(os.environ.get("FORMFACTORY_PORT", "5050")),
+    "temperature": 1.0,  # Higher temp for rollout diversity -- at 0.7 the SFT model produces identical outputs
+    "min_reward_variance": float(os.environ.get("MIN_REWARD_VARIANCE", "0.01")),  # Skip gradient update when within-group reward variance is below this
+    "temperature_spread": float(os.environ.get("TEMPERATURE_SPREAD", "0.0")),  # Per-rollout temperature spread for diversity (0 = uniform temp)
+    "top_p": float(os.environ.get("TOP_P", "0.95")),
+    "epsilon": float(os.environ.get("EPSILON", "0.0")),  # Epsilon-greedy action perturbation rate
+    "multi_turn": os.environ.get("MULTI_TURN", "false").lower() == "true",
+    "max_turns": int(os.environ.get("MAX_TURNS", "15")),
+    "browser_headless": True,
+    "action_timeout_s": 10,  # Increased from 5s -- v10 hit timeouts on long descriptions
+    "reward_weights": {
+        "task_completion": 0.4,
+        "field_accuracy": 0.4,
+        "execution_completeness": 0.2,
+    },
+    # Early stopping: stop after patience gradient updates without improvement
+    "early_stopping_patience": int(os.environ.get("EARLY_STOPPING_PATIENCE", "50")),
+    "early_stopping_window": int(os.environ.get("EARLY_STOPPING_WINDOW", "20")),
+}
+
+# Data Config
+DATA_CONFIG = {
+    "train_file": os.environ.get("TRAIN_FILE", "data/processed/formfactory_sft_train.jsonl"),
+    "val_file": os.environ.get("VAL_FILE", "data/processed/formfactory_sft_val.jsonl"),
+    "test_file": os.environ.get("TEST_FILE", "data/processed/formfactory_sft_test.jsonl"),
+    "max_train_samples": int(os.environ.get("MAX_TRAIN_SAMPLES", "5000")),
+    "max_eval_samples": int(os.environ.get("MAX_EVAL_SAMPLES", "500")),
+}
+
+# S3 Config for checkpoint persistence
+S3_CONFIG = {
+    "checkpoint_bucket": os.environ.get(
+        "S3_CHECKPOINT_BUCKET", "openbrowser-eval-results-529206289231"
+    ),
+    "checkpoint_prefix": os.environ.get(
+        "S3_CHECKPOINT_PREFIX", "training/checkpoints"
+    ),
+    "region": os.environ.get("AWS_REGION", "ca-central-1"),
+}

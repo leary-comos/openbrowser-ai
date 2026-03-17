@@ -1,0 +1,101 @@
+.venv
+__pycache__/
+__pycache__
+*.py[cod]
+*.pyc
+!README.md
+*.png
+!benchmarks/benchmark_comparison.png
+!benchmarks/cli_benchmark_scatter.png
+!benchmarks/cli_benchmark_overview.png
+!benchmarks/cli_benchmark_per_task.png
+!docs/images/*.png
+.env
+!.github/workflows/*.yml
+.DS_Store
+.vscode
+node_modules
+*.pptx
+presentation
+CSC490
+STAD68
+STAD80
+litellm
+.cursor
+.claude
+.terraform
+.terraform.lock.hcl
+.github/copilot-instructions.md
+local_docs
+terraform.tfstate*
+
+# LaTeX build artifacts
+*.aux
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.synctex.gz
+*.toc
+*.lof
+*.lot
+*.bbl
+*.blg
+
+# Excalidraw source files
+*.excalidraw
+
+# Resume/reference files
+resume_*.txt
+
+# Old/duplicate PDFs
+CSC490/A1/a1.pdf
+CSC490/A1/high_level_architecture.pdf
+
+!docker-compose.dev.yml
+!docker-compose.yml
+
+# Terraform
+terraform/.terraform/
+terraform/.terraform.lock.hcl
+terraform/*.tfstate
+terraform/*.tfstate.*
+terraform/crash.log
+terraform/crash.*.log
+terraform/*.tfvars
+!terraform/terraform.tfvars.example
+terraform/override.tf
+terraform/override.tf.json
+terraform/*_override.tf
+terraform/*_override.tf.json
+
+data/formfactory/
+
+# Test coverage artifacts
+.coverage
+coverage.xml
+coverage-badge.svg
+
+# Extension build artifacts and secrets
+*.pem
+*.crx
+
+# Runtime data
+openbrowser_agent_data/
+backend/openbrowser_agent_data/
+data/processed/*
+!data/processed/*.jsonl
+results/
+feature-store-ui/
+
+# Drawio diagrams
+*.drawio
+
+# Benchmark plot scripts (generated images are tracked, scripts are local-only)
+benchmarks/plot_benchmark.py
+benchmarks/plot_all_benchmarks.py
+benchmarks/plot_cli_benchmark.py
+
+# Local-only benchmark scripts and 3-way results
+benchmarks/e2e_mcp_vs_cli_benchmark.py
+benchmarks/e2e_mcp_vs_cli_results.json

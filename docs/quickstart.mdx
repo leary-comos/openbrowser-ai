@@ -1,0 +1,202 @@
+---
+title: "Human Quickstart"
+description: ""
+icon: "rocket"
+---
+
+To get started with OpenBrowser you need to install the package and set up an API key.
+
+## 1. Installing OpenBrowser
+
+<Tabs>
+  <Tab title="Quick install">
+    **macOS / Linux**
+
+    ```bash
+    curl -fsSL https://raw.githubusercontent.com/billy-enrizky/openbrowser-ai/main/install.sh | sh
+    ```
+
+    **Windows (PowerShell)**
+
+    ```powershell
+    irm https://raw.githubusercontent.com/billy-enrizky/openbrowser-ai/main/install.ps1 | iex
+    ```
+
+    Detects `uv`, `pipx`, or `pip` and installs OpenBrowser automatically.
+
+    Install to `~/.local/bin` without sudo:
+
+    ```bash
+    curl -fsSL https://raw.githubusercontent.com/billy-enrizky/openbrowser-ai/main/install.sh | sh -s -- --local
+    ```
+  </Tab>
+  <Tab title="Homebrew">
+    **macOS / Linux**
+
+    ```bash
+    brew tap billy-enrizky/openbrowser
+    brew install openbrowser-ai
+    ```
+
+    Installs OpenBrowser into a Homebrew-managed virtualenv.
+  </Tab>
+  <Tab title="pip">
+    ```bash
+    pip install openbrowser-ai
+    ```
+
+    With LLM agent support:
+
+    ```bash
+    pip install "openbrowser-ai[agent]"
+    ```
+  </Tab>
+  <Tab title="uv (recommended)">
+    ```bash
+    uv pip install "openbrowser-ai[agent]"
+    ```
+
+    Or create an isolated environment first:
+
+    ```bash
+    uv venv --python 3.12
+    source .venv/bin/activate
+    uv pip install "openbrowser-ai[agent]"
+    ```
+  </Tab>
+  <Tab title="uvx (zero install)">
+    Run directly without installing -- `uvx` downloads and caches the package automatically:
+
+    ```bash
+    # MCP server mode
+    uvx openbrowser-ai --mcp
+
+    # CLI daemon mode
+    uvx openbrowser-ai -c "await navigate('https://example.com')"
+    ```
+
+    No virtual environment needed. Ideal for Claude Code, Cursor, and other MCP clients.
+  </Tab>
+  <Tab title="pipx">
+    ```bash
+    pipx install openbrowser-ai
+    ```
+
+    Installs into an isolated environment with the `openbrowser-ai` command available globally.
+  </Tab>
+  <Tab title="From source">
+    ```bash
+    git clone https://github.com/billy-enrizky/openbrowser-ai.git
+    cd openbrowser-ai
+    uv pip install -e ".[agent]"
+    ```
+  </Tab>
+</Tabs>
+
+<Info>
+**No separate browser install needed.** OpenBrowser auto-detects any installed Chromium-based browser (Chrome, Edge, Brave, Chromium) and uses it directly. If none is found and `uvx` is available, Chromium is installed automatically on first run. To pre-install manually (requires `uvx`): `openbrowser-ai install`
+</Info>
+
+## 2. Choose your favorite LLM
+Create a `.env` file and add your API key.
+
+```bash .env
+touch .env
+```
+
+<Info>On Windows, use `echo. > .env`</Info>
+
+Then add your API key to the file.
+
+<CodeGroup>
+```bash Google
+# add your key to .env file
+GOOGLE_API_KEY=
+# Get your free Gemini API key from https://aistudio.google.com/app/u/1/apikey
+```
+```bash OpenAI
+# add your key to .env file
+OPENAI_API_KEY=
+```
+```bash Anthropic
+# add your key to .env file
+ANTHROPIC_API_KEY=
+```
+</CodeGroup>
+
+See [Supported Models](/supported-models) for more.
+
+## 3. Run your first agent
+
+<CodeGroup>
+```python OpenBrowser
+from openbrowser import Agent, ChatBrowserUse
+from dotenv import load_dotenv
+import asyncio
+
+load_dotenv()
+
+async def main():
+    llm = ChatBrowserUse()
+    task = "Find the number 1 post on Show HN"
+    agent = Agent(task=task, llm=llm)
+    await agent.run()
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+```python Google
+from openbrowser import Agent, ChatGoogle
+from dotenv import load_dotenv
+import asyncio
+
+load_dotenv()
+
+async def main():
+    llm = ChatGoogle(model="gemini-flash-latest")
+    task = "Find the number 1 post on Show HN"
+    agent = Agent(task=task, llm=llm)
+    await agent.run()
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+```python OpenAI
+from openbrowser import Agent, ChatOpenAI
+from dotenv import load_dotenv
+import asyncio
+
+load_dotenv()
+
+async def main():
+    llm = ChatOpenAI(model="gpt-4.1-mini")
+    task = "Find the number 1 post on Show HN"
+    agent = Agent(task=task, llm=llm)
+    await agent.run()
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+```python Anthropic
+from openbrowser import Agent, ChatAnthropic
+from dotenv import load_dotenv
+import asyncio
+
+load_dotenv()
+
+async def main():
+    llm = ChatAnthropic(model='claude-sonnet-4-0', temperature=0.0)
+    task = "Find the number 1 post on Show HN"
+    agent = Agent(task=task, llm=llm)
+    await agent.run()
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+</CodeGroup>
+
+<Note> Custom browsers can be configured in one line. Check out <a href = "customize/browser/basics">browsers</a> for more. </Note>
+
+## 4. Going to Production
+
+For production deployments, see [Going to Production](/production) for best practices on running OpenBrowser in production environments.
